@@ -1,0 +1,59 @@
+name: 🚀 Release
+
+on:
+  workflow_dispatch:
+
+jobs:
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout project
+        uses: actions/checkout@v4
+
+      - name: Check version
+        id: meta
+        run: |
+          sudo apt update
+          sudo apt install libxml2-utils
+          if [ -f "gradle.properties" ]; then
+            VERSION=$(grep "^version=" gradle.properties | cut -d'=' -f2)
+          elif [ -f "pom.xml" ]; then
+            VERSION=$(xmllint --xpath "string(//project/version)" pom.xml)
+          else
+            echo "No version file found!"
+            exit 1
+          fi
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Build JAR
+        run: mvn clean package
+
+      - name: Find JAR
+        id: find_jar
+        run: |
+          JAR_PATH=$(find . -name "*.jar" | grep -v "sources" | grep -v "javadoc" | grep -v "/original-.*\.jar" | head -n 1)
+          if [[ -z "$JAR_PATH" ]]; then
+            echo "No JAR file found!"
+            exit 1
+          fi
+          echo "jar_path=${JAR_PATH}" >> $GITHUB_OUTPUT
+
+      - name: Create GitHub Release
+        uses: ncipollo/release-action@v1
+        with:
+          tag: "v${{ steps.meta.outputs.version }}" # Prepend "v" to the version to make it a tag
+          commit: ${{ github.sha }}
+          body: "Release ${{ steps.meta.outputs.version }}"
+          artifacts: |
+            ${{ steps.find_jar.outputs.jar_path }}
+            ${{ steps.find_jar.outputs.jar_path }}.sig
