@@ -62,7 +62,7 @@ public class BurpExtender implements IBurpExtender, IHttpListener, ITab {
 
         mainPanel.add(Box.createRigidArea(new Dimension(0, 10))); // Add spacing
 
-        JLabel descriptionLabel = new JLabel("Configure ingestion from Caido to JXScout");
+        JLabel descriptionLabel = new JLabel("Configure ingestion from Burp to JXScout");
         descriptionLabel.setFont(new Font("Arial", Font.PLAIN, 12));
         descriptionLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
         mainPanel.add(descriptionLabel);
