@@ -21,10 +21,16 @@ jobs:
           sudo apt install libxml2-utils
           if [ -f "gradle.properties" ]; then
             VERSION=$(grep "^version=" gradle.properties | cut -d'=' -f2)
+            echo "Found version in gradle.properties: $VERSION"
           elif [ -f "pom.xml" ]; then
-            VERSION=$(xmllint --xpath "string(//project/version)" pom.xml)
+            VERSION=$(xmllint --xpath "string(/*[local-name()='project']/*[local-name()='version'])" pom.xml)
+            echo "Found version in pom.xml: $VERSION"
           else
             echo "No version file found!"
+            exit 1
+          fi
+          if [[ -z "$VERSION" ]]; then
+            echo "Version is empty!"
             exit 1
           fi
           echo "version=${VERSION}" >> $GITHUB_OUTPUT
