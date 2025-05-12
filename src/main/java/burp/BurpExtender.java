@@ -165,7 +165,7 @@ public class BurpExtender implements IBurpExtender, IHttpListener, ITab {
 
     @Override
     public void processHttpMessage(int toolFlag, boolean messageIsRequest, IHttpRequestResponse message) {
-        if (!messageIsRequest) {
+        if (!messageIsRequest && (toolFlag == IBurpExtenderCallbacks.TOOL_PROXY || toolFlag == IBurpExtenderCallbacks.TOOL_SCANNER || toolFlag == IBurpExtenderCallbacks.TOOL_SPIDER)) {
             byte[] request = message.getRequest();
             IRequestInfo requestInfo = helpers.analyzeRequest(message);
             URL requestUrl = requestInfo.getUrl();
